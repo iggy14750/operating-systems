@@ -10,7 +10,11 @@
 int
 sys_getcount(void)
 {
-  return 0;
+  int callnum = 0;
+  if (argint(0, &callnum) < 0) {
+    return -1;
+  }
+  return callnum;
 }
 
 int
