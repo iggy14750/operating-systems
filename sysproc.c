@@ -8,6 +8,12 @@
 #include "proc.h"
 
 int
+sys_getcount(void)
+{
+  return 0;
+}
+
+int
 sys_fork(void)
 {
   return fork();
