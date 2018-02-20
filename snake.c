@@ -10,7 +10,7 @@ int main()
     draw_pixel(320, 320+i, i);
   }
   blit();
-  sleep(100); // 100 cycles = ~1 second
+  sleep(500); // 100 cycles = ~1 second
   exit_graphics();
   exit();
 }
