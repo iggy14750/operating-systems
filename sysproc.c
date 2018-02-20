@@ -14,7 +14,7 @@ sys_getcount(void)
   if (argint(0, &callnum) < 0) {
     return -1;
   }
-  return callnum;
+  return myproc()->use_count[callnum];
 }
 
 int
