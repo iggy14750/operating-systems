@@ -21,3 +21,5 @@
 #define SYS_mkdir  20
 #define SYS_close  21
 #define SYS_getcount 22
+#define SYS_init_graphics 23
+#define SYS_exit_graphics 24

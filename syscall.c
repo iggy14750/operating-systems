@@ -104,6 +104,8 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_getcount(void);
+extern int sys_init_graphics(void);
+extern int sys_exit_graphics(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -127,7 +129,9 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
-[SYS_getcount] sys_getcount,
+[SYS_getcount]      sys_getcount,
+[SYS_init_graphics] sys_init_graphics,
+[SYS_exit_graphics] sys_exit_graphics,
 };
 
 void
@@ -138,7 +142,7 @@ syscall(void)
 
   num = curproc->tf->eax;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
-    curproc->use_count[num]++;
+    // curproc->use_count[num]++; Temporary, so I don't mess anything else up.
     curproc->tf->eax = syscalls[num]();
   } else {
     cprintf("%d %s: unknown sys call %d\n",

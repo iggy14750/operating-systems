@@ -24,6 +24,8 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int getcount(int);
+int init_graphics(void);
+int exit_graphics(void);
 
 // ulib.c
 int stat(char*, struct stat*);

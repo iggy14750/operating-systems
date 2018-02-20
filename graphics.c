@@ -457,17 +457,17 @@ int
 sys_init_graphics(void)
 {
 
-  write_regs(g_640x480x16);
+  //write_regs(g_640x480x16);
   graphics_mode = 1;
   //TO-DO: Complete the function body
-  return 0;
+  return 42;
 }
 
 int
 sys_exit_graphics(void)
 {
-  write_regs(g_80x25_text);
-  write_font(g_8x16_font, 16);
+  //write_regs(g_80x25_text);
+  //write_font(g_8x16_font, 16);
   graphics_mode = 0;
-  return 0;
+  return 42;
 }
