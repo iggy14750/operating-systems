@@ -448,7 +448,7 @@ static void write_font(unsigned char *buf, unsigned font_height)
   outb(VGA_GC_DATA, gc6);
 }
 
-#define BUFFER_LEN 640*640/8
+#define BUFFER_LEN 640*480/8
 int graphics_mode = 0;
 unsigned char offscreen_buffer[4][BUFFER_LEN];
 
