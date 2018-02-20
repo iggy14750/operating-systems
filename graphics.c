@@ -456,12 +456,30 @@ int is_graphics(void) {
   return graphics_mode;
 }
 
+static void _clear()
+{
+  for (int p = 0; p < 4; ++p) {
+    memset(offscreen_buffer[p], 0, BUFFER_LEN);
+  }
+}
+
+static void _blit()
+{
+  unsigned char * fb = (unsigned char *) P2V(0xa0000);
+  for (int p = 0; p < 4; p++) {
+    set_plane(p);
+    memmove(fb, offscreen_buffer[p], BUFFER_LEN);
+  }
+}
+
 int
 sys_init_graphics(void)
 {
   write_regs(g_640x480x16);
   graphics_mode = 1;
   //TO-DO: Complete the function body
+  _clear();
+  _blit();
   return 0;
 }
 
@@ -483,9 +501,7 @@ sys_getkey(void)
 int
 sys_clear_screen(void)
 {
-  for (int p = 0; p < 4; ++p) {
-    memset(offscreen_buffer[p], 0, BUFFER_LEN);
-  }
+  _clear();
   return 0;
 }
 
@@ -541,10 +557,6 @@ sys_draw_line(void)
 int
 sys_blit(void)
 {
-  unsigned char * fb = (unsigned char *) P2V(0xa0000);
-  for (int p = 0; p < 4; p++) {
-    set_plane(p);
-    memmove(fb, offscreen_buffer[p], BUFFER_LEN);
-  }
+  _blit();
   return 0;
 }
