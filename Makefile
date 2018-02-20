@@ -172,6 +172,7 @@ UPROGS=\
 	_myapp\
 	_rm\
 	_sh\
+	_snake\
 	_stressfs\
 	_usertests\
 	_wc\
