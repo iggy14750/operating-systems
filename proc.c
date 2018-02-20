@@ -38,10 +38,10 @@ struct cpu*
 mycpu(void)
 {
   int apicid, i;
-  
+
   if(readeflags()&FL_IF)
     panic("mycpu called with interrupts enabled\n");
-  
+
   apicid = lapicid();
   // APIC IDs are not guaranteed to be contiguous. Maybe we should have
   // a reverse map, or reserve a register to store &cpus[i].
@@ -111,6 +111,29 @@ found:
   p->context = (struct context*)sp;
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
+  p->use_count[0]  = 0b00000; // Name     | num | Gray Code
+  p->use_count[1]  = 0b00001; // fork     | 1   | 1
+  p->use_count[2]  = 0b00011; // exit     | 2   | 3
+  p->use_count[3]  = 0b00010; // wait     | 3   | 2
+  p->use_count[4]  = 0b00110; // pipe     | 4   | 6
+  p->use_count[5]  = 0b00111; // read     | 5   | 7
+  p->use_count[6]  = 0b00101; // kill     | 6   | 5
+  p->use_count[7]  = 0b00100; // exec     | 7   | 4
+  p->use_count[8]  = 0b01100; // fstat    | 8   | 12
+  p->use_count[9]  = 0b01101; // chdir    | 9   | 13
+  p->use_count[10] = 0b01111; // dup      | 10  | 15
+  p->use_count[11] = 0b01110; // getpid   | 11  | 14
+  p->use_count[12] = 0b01010; // sbrk     | 12  | 10
+  p->use_count[13] = 0b01011; // sleep    | 13  | 11
+  p->use_count[14] = 0b01001; // uptime   | 14  | 9
+  p->use_count[15] = 0b01000; // open     | 15  | 8
+  p->use_count[16] = 0b01001; // write    | 16  | 9
+  p->use_count[17] = 0b01011; // mknod    | 17  | 11
+  p->use_count[18] = 0b01010; // unlink   | 18  | 10
+  p->use_count[19] = 0b01110; // link     | 19  | 14
+  p->use_count[20] = 0b01111; // mkdir    | 20  | 15
+  p->use_count[21] = 0b01101; // close    | 21  | 13
+  p->use_count[22] = 0b01100; // getcount | 22  | 12
 
   return p;
 }
@@ -124,7 +147,7 @@ userinit(void)
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
   p = allocproc();
-  
+
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
@@ -275,7 +298,7 @@ wait(void)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-  
+
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
@@ -325,7 +348,7 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -418,7 +441,7 @@ void
 sleep(void *chan, struct spinlock *lk)
 {
   struct proc *p = myproc();
-  
+
   if(p == 0)
     panic("sleep");
 
