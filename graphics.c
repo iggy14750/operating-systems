@@ -474,3 +474,50 @@ sys_exit_graphics(void)
   return 23;
 }
 
+int
+sys_getkey(void)
+{
+  return 0;
+}
+
+int
+sys_clear_screen(void)
+{
+  return 0;
+}
+
+int
+sys_draw_pixel(void)
+{
+  int x, y, color;
+  if (
+    argint(0, &x) < 0 ||
+    argint(1, &y) < 0 ||
+    argint(2, &color) < 0
+  ) {
+    return -1;
+  }
+  return x + y + color;
+}
+
+int
+sys_draw_line(void)
+{
+  int x1, y1, x2, y2, color;
+  if (
+    argint(0, &x1) < 0 ||
+    argint(1, &y1) < 0 ||
+    argint(2, &x2) < 0 ||
+    argint(3, &y2) < 0 ||
+    arging(4, &color) < 0
+  ) {
+    return -1;
+  }
+  return x1 + y1 + x2 + y2 + color;
+}
+
+int
+sys_blit(void)
+{
+  return 0;
+}

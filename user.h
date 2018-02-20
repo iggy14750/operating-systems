@@ -26,6 +26,11 @@ int uptime(void);
 int getcount(int);
 int init_graphics(void);
 int exit_graphics(void);
+int getkey(void);
+int clear_screen(void);
+int draw_pixel(int,int,int);
+int draw_line(int,int,int,int,int);
+int blit(void);
 
 // ulib.c
 int stat(char*, struct stat*);

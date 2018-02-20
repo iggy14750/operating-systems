@@ -20,6 +20,11 @@
 #define SYS_link   19
 #define SYS_mkdir  20
 #define SYS_close  21
-#define SYS_getcount 22
+#define SYS_getcount      22
 #define SYS_init_graphics 23
 #define SYS_exit_graphics 24
+#define SYS_getkey        25
+#define SYS_clear_screen  26
+#define SYS_draw_pixel    27
+#define SYS_draw_line     28
+#define SYS_blit          29

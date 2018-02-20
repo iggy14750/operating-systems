@@ -56,6 +56,12 @@ int             writei(struct inode*, char*, uint, uint);
 // graphics.c
 int init_graphics(void);
 int exit_graphics(void);
+int getkey(void);
+int clear_screen(void);
+int draw_pixel(int,int,int);
+int draw_line(int,int,int,int,int);
+int blit(void);
+int is_graphics(void);
 
 // ide.c
 void            ideinit(void);
