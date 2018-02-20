@@ -486,6 +486,8 @@ sys_init_graphics(void)
 int
 sys_exit_graphics(void)
 {
+  _clear();
+  _blit();
   write_regs(g_80x25_text);
   write_font(g_8x16_font, 16);
   graphics_mode = 0;
