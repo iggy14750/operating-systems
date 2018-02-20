@@ -4,7 +4,6 @@
 #include "x86.h"
 #include "spinlock.h"
 
-#if 0
 #define VGA_AC_INDEX        0x3C0
 #define VGA_AC_WRITE        0x3C0
 #define VGA_AC_READ         0x3C1
@@ -448,9 +447,11 @@ static void write_font(unsigned char *buf, unsigned font_height)
   outb(VGA_GC_INDEX, 6);
   outb(VGA_GC_DATA, gc6);
 }
-#endif
 
+#define BUFFER_LEN 640*640/8
 int graphics_mode = 0;
+unsigned char offscreen_buffer[4][BUFFER_LEN];
+
 int is_graphics(void) {
   return graphics_mode;
 }
@@ -458,20 +459,19 @@ int is_graphics(void) {
 int
 sys_init_graphics(void)
 {
-
-  //write_regs(g_640x480x16);
+  write_regs(g_640x480x16);
   graphics_mode = 1;
   //TO-DO: Complete the function body
-  return 42;
+  return 0;
 }
 
 int
 sys_exit_graphics(void)
 {
-  //write_regs(g_80x25_text);
-  //write_font(g_8x16_font, 16);
+  write_regs(g_80x25_text);
+  write_font(g_8x16_font, 16);
   graphics_mode = 0;
-  return 23;
+  return 0;
 }
 
 int
@@ -483,7 +483,28 @@ sys_getkey(void)
 int
 sys_clear_screen(void)
 {
+  for (int p = 0; p < 4; ++p) {
+    memset(offscreen_buffer[p], 0, BUFFER_LEN);
+  }
   return 0;
+}
+
+static void drawp(int x, int y, char color)
+{
+  int pixel = 640*x + y;
+  int bit = y % 8;
+  for (int p = 0; p < 4; ++p) {
+    char current = offscreen_buffer[p][pixel];
+    char shifted = ((color >> p) & 1) << bit;
+    if (shifted == 0) {
+      // Unset the bit.
+      current &= ~shifted;
+    } else {
+      // set the bit.
+      current |= shifted;
+    }
+    offscreen_buffer[p][pixel] = current;
+  }
 }
 
 int
@@ -497,7 +518,8 @@ sys_draw_pixel(void)
   ) {
     return -1;
   }
-  return x + y + color;
+  drawp(x, y, (char)color);
+  return 0;
 }
 
 int
@@ -519,5 +541,10 @@ sys_draw_line(void)
 int
 sys_blit(void)
 {
+  unsigned char * fb = (unsigned char *) P2V(0xa0000);
+  for (int p = 0; p < 4; p++) {
+    set_plane(p);
+    memmove(fb, offscreen_buffer[p], BUFFER_LEN);
+  }
   return 0;
 }
