@@ -509,7 +509,7 @@ sys_draw_line(void)
     argint(1, &y1) < 0 ||
     argint(2, &x2) < 0 ||
     argint(3, &y2) < 0 ||
-    arging(4, &color) < 0
+    argint(4, &color) < 0
   ) {
     return -1;
   }
