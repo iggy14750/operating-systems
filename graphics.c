@@ -507,7 +507,7 @@ sys_clear_screen(void)
 
 static void drawp(int x, int y, char color)
 {
-  int pixel = 640*x + y;
+  int pixel = 640*y + x;
   int bit = y % 8;
   for (int p = 0; p < 4; ++p) {
     char current = offscreen_buffer[p][pixel];
