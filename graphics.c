@@ -4,6 +4,7 @@
 #include "x86.h"
 #include "spinlock.h"
 
+#if 0
 #define VGA_AC_INDEX        0x3C0
 #define VGA_AC_WRITE        0x3C0
 #define VGA_AC_READ         0x3C1
@@ -447,6 +448,7 @@ static void write_font(unsigned char *buf, unsigned font_height)
   outb(VGA_GC_INDEX, 6);
   outb(VGA_GC_DATA, gc6);
 }
+#endif
 
 int graphics_mode = 0;
 int is_graphics(void) {
@@ -469,5 +471,6 @@ sys_exit_graphics(void)
   //write_regs(g_80x25_text);
   //write_font(g_8x16_font, 16);
   graphics_mode = 0;
-  return 42;
+  return 23;
 }
+
