@@ -467,8 +467,9 @@ struct {
 void
 graphicsintr(int (*getc)(void))
 {
+  char c;
   acquire(&graphics.lock);
-  while ((c = getc()) >= 0 & input.read != input.write) {
+  while (((c = getc()) >= 0) && (input.read != input.write)) {
     if (c == 0) continue;
     input.buf[input.write] = c;
     input.write = (input.write + 1) % INPUT_BUF;
