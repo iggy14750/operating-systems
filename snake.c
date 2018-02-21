@@ -3,23 +3,44 @@
 #include "syscall.h"
 #include "graphics.h"
 
+struct {
+  int x;
+  int y;
+} pixel;
+
 int main()
 {
+  int c = 1;
+  pixel.x = 320;
+  pixel.y = 240;
   init_graphics();
-  for (int color = 0; color < 16; color++) {
-    for (int i = 0; i < 8; ++i) {
-      for (int j = 0; j < 8; ++j) {
-        draw_pixel(320+(8*color)+i, 240+j, color);
-      }
+  while (1) {
+    c = getkey();
+    printf(1, "%d\n", c);
+    switch (c) {
+      case 'w':
+        pixel.y--;
+        break;
+      case 'd':
+        pixel.x++;
+        break;
+      case 's':
+        pixel.y++;
+        break;
+      case 'a':
+        pixel.x--;
+        break;
+      case -1:
+        break;
+      case 'p':
+        goto exit;
     }
+    clear_screen();
+    draw_pixel(pixel.x, pixel.y, DARK_RED);
+    blit();
+    sleep(20); // 100 cycles = ~1 second
   }
-  blit();
-  sleep(200); // 100 cycles = ~1 second
-
-  clear_screen();
-  draw_line(124, 130, 356, 272, DARK_RED);
-  blit();
-  sleep(300);
+exit:
   exit_graphics();
   exit();
 }
