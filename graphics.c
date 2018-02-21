@@ -460,6 +460,7 @@ static struct {
 #define INPUT_BUF 8
 struct {
   char buf[INPUT_BUF];
+  char last;
   uint read;
   uint write;
 } input;
@@ -469,10 +470,10 @@ graphicsintr(int (*getc)(void))
 {
   char c;
   acquire(&graphics.lock);
-  while (((c = getc()) >= 0) && (input.read != input.write)) {
+  while ((c = getc()) >= 0) {
     if (c == 0) continue;
-    input.buf[input.write] = c;
-    input.write = (input.write + 1) % INPUT_BUF;
+    input.last = c;
+    break;
   }
   release(&graphics.lock);
 }
@@ -527,10 +528,8 @@ sys_getkey(void)
 {
   int c = -1;
   acquire(&graphics.lock);
-  if ((input.read + 1) % INPUT_BUF != input.write) {
-    input.read = (input.read + 1) % INPUT_BUF;
-    c = input.buf[input.read];
-  }
+  c = input.last;
+  input.last = -1;
   release(&graphics.lock);
   return c;
 }

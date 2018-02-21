@@ -49,7 +49,7 @@ int main()
     clear_screen();
     draw(s);
     blit();
-    sleep(5); // 100 cycles = ~1 second
+    sleep(1); // 100 cycles = ~1 second
   }
 exit:
   exit_graphics();
