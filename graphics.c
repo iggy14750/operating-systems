@@ -449,40 +449,37 @@ static void write_font(unsigned char *buf, unsigned font_height)
 }
 
 #define BUFFER_LEN 640*480/8
-int graphics_mode = 0;
-unsigned char offscreen_buffer[4][BUFFER_LEN];
 
 static struct {
-  struct spinlock lock;
-  int locking;
+  int mode = 0;
+  unsigned char offscreen_buffer[4][BUFFER_LEN];
+  struct {
+    struct spinlock lock;
+    char last;
+  } input;
 } graphics;
-
-
-struct {
-  char last;
-} input;
 
 void
 graphicsintr(int (*getc)(void))
 {
   char c;
-  acquire(&graphics.lock);
+  acquire(&graphics.input.lock);
   while ((c = getc()) >= 0) {
     if (c == 0) continue;
-    input.last = c;
+    graphics.input.last = c;
     break;
   }
-  release(&graphics.lock);
+  release(&graphics.input.lock);
 }
 
 int is_graphics(void) {
-  return graphics_mode;
+  return graphics.mode;
 }
 
 static void _clear()
 {
   for (int p = 0; p < 4; ++p) {
-    memset(offscreen_buffer[p], 0, BUFFER_LEN);
+    memset(graphics.offscreen_buffer[p], 0, BUFFER_LEN);
   }
 }
 
@@ -491,7 +488,7 @@ static void _blit()
   unsigned char * fb = (unsigned char *) P2V(0xa0000);
   for (int p = 0; p < 4; p++) {
     set_plane(p);
-    memmove(fb, offscreen_buffer[p], BUFFER_LEN);
+    memmove(fb, graphics.offscreen_buffer[p], BUFFER_LEN);
   }
 }
 
@@ -499,11 +496,10 @@ int
 sys_init_graphics(void)
 {
   write_regs(g_640x480x16);
-  graphics_mode = 1;
+  graphics.mode = 1;
   _clear();
   _blit();
-  initlock(&graphics.lock, "graphics");
-  graphics.locking = 1;
+  initlock(&graphics.input.lock, "graphics");
   return 0;
 }
 
@@ -514,7 +510,7 @@ sys_exit_graphics(void)
   _blit();
   write_regs(g_80x25_text);
   write_font(g_8x16_font, 16);
-  graphics_mode = 0;
+  graphics.mode = 0;
   return 0;
 }
 
@@ -522,10 +518,10 @@ int
 sys_getkey(void)
 {
   int c = -1;
-  acquire(&graphics.lock);
-  c = input.last;
-  input.last = -1;
-  release(&graphics.lock);
+  acquire(&graphics.input.lock);
+  c = graphics.input.last;
+  graphics.input.last = -1;
+  release(&graphics.input.lock);
   return c;
 }
 
@@ -541,7 +537,7 @@ static void drawp(int x, int y, char color)
   int pixel = (640*y + x)/8;
   int bit = x % 8;
   for (int p = 0; p < 4; ++p) {
-    char current = offscreen_buffer[p][pixel];
+    char current = graphics.offscreen_buffer[p][pixel];
     char shifted = ((color >> p) & 1) << bit;
     if (shifted == 0) {
       // Unset the bit.
@@ -550,7 +546,7 @@ static void drawp(int x, int y, char color)
       // set the bit.
       current |= shifted;
     }
-    offscreen_buffer[p][pixel] = current;
+    graphics.offscreen_buffer[p][pixel] = current;
   }
 }
 
