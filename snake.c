@@ -1,6 +1,7 @@
 #include "types.h"
 #include "user.h"
 #include "syscall.h"
+#include "graphics.h"
 
 int main()
 {
@@ -13,7 +14,17 @@ int main()
     }
   }
   blit();
-  sleep(500); // 100 cycles = ~1 second
+  sleep(200); // 100 cycles = ~1 second
+
+  // Paint the town (screen) red
+  clear_screen();
+  for (int i = 320; i < 400; ++i) {
+    for (int j = 240; j < 300; ++j) {
+      draw_pixel(i, j, DARK_RED);
+    }
+  }
+  blit();
+  sleep(300);
   exit_graphics();
   exit();
 }
