@@ -457,12 +457,9 @@ static struct {
   int locking;
 } graphics;
 
-#define INPUT_BUF 8
+
 struct {
-  char buf[INPUT_BUF];
   char last;
-  uint read;
-  uint write;
 } input;
 
 void
@@ -507,8 +504,6 @@ sys_init_graphics(void)
   _blit();
   initlock(&graphics.lock, "graphics");
   graphics.locking = 1;
-  input.write = 1;
-  input.read = 0;
   return 0;
 }
 
