@@ -452,6 +452,30 @@ static void write_font(unsigned char *buf, unsigned font_height)
 int graphics_mode = 0;
 unsigned char offscreen_buffer[4][BUFFER_LEN];
 
+static struct {
+  struct spinlock lock;
+  int locking;
+} graphics;
+
+#define INPUT_BUF 128
+struct {
+  char buf[INPUT_BUF];
+  uint read;
+  uint write;
+} input;
+
+void
+graphicsintr(int (*getc)(void))
+{
+  acquire(&graphics.lock);
+  while ((c = getc()) >= 0 & input.read != input.write) {
+    if (c == 0) continue;
+    input.buf[input.write] = c;
+    input.write = (input.write + 1) % INPUT_BUF;
+  }
+  release(&graphics.lock);
+}
+
 int is_graphics(void) {
   return graphics_mode;
 }
@@ -477,9 +501,12 @@ sys_init_graphics(void)
 {
   write_regs(g_640x480x16);
   graphics_mode = 1;
-  //TO-DO: Complete the function body
   _clear();
   _blit();
+  initlock(&graphics.lock, "graphics");
+  graphics.locking = 1;
+  input.write = 1;
+  input.read = 0;
   return 0;
 }
 
@@ -497,7 +524,14 @@ sys_exit_graphics(void)
 int
 sys_getkey(void)
 {
-  return 0;
+  int c = -1;
+  acquire(&graphics.lock);
+  if ((input.read + 1) % INPUT_BUF != input.write) {
+    input.read = (input.read + 1) % INPUT_BUF;
+    c = input.buf[input.read];
+  }
+  release(&graphics.lock);
+  return c;
 }
 
 int
