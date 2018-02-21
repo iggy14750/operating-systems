@@ -457,7 +457,7 @@ static struct {
   int locking;
 } graphics;
 
-#define INPUT_BUF 128
+#define INPUT_BUF 8
 struct {
   char buf[INPUT_BUF];
   uint read;

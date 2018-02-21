@@ -3,32 +3,43 @@
 #include "syscall.h"
 #include "graphics.h"
 
-struct {
+struct sprite {
   int x;
   int y;
-} pixel;
+};
+
+void draw(struct sprite s)
+{
+  for (int i = 0; i < 8; ++i) {
+    for (int j = 0; j < 8; ++j) {
+      draw_pixel(8*s.x + i, 8*s.y + j, DARK_RED);
+    }
+  }
+}
 
 int main()
 {
   int c = 1;
-  pixel.x = 320;
-  pixel.y = 240;
+  struct sprite s = {
+    .x = 40,
+    .y = 30,
+  };
   init_graphics();
   while (1) {
     c = getkey();
     printf(1, "%d\n", c);
     switch (c) {
       case 'w':
-        pixel.y--;
+        s.y--;
         break;
       case 'd':
-        pixel.x++;
+        s.x++;
         break;
       case 's':
-        pixel.y++;
+        s.y++;
         break;
       case 'a':
-        pixel.x--;
+        s.x--;
         break;
       case -1:
         break;
@@ -36,9 +47,9 @@ int main()
         goto exit;
     }
     clear_screen();
-    draw_pixel(pixel.x, pixel.y, DARK_RED);
+    draw(s);
     blit();
-    sleep(20); // 100 cycles = ~1 second
+    sleep(5); // 100 cycles = ~1 second
   }
 exit:
   exit_graphics();
