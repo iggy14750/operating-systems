@@ -449,9 +449,13 @@ static void write_font(unsigned char *buf, unsigned font_height)
 }
 
 #define BUFFER_LEN 640*480/8
-
+/**
+ * All global state is managed by this object.
+ * Then, any reference to 'graphics.etc..' will plainly
+ * refer to global state, and not local variables.
+ */
 static struct {
-  int mode = 0;
+  int mode;
   unsigned char offscreen_buffer[4][BUFFER_LEN];
   struct {
     struct spinlock lock;
