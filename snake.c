@@ -5,8 +5,12 @@
 int main()
 {
   init_graphics();
-  for (int i = 0; i < 16; i++) {
-    draw_pixel(320+i, 240, i);
+  for (int color = 0; color < 16; color++) {
+    for (int i = 0; i < 8; ++i) {
+      for (int j = 0; j < 8; ++j) {
+        draw_pixel(320+(8*color)+i, 240+j, color);
+      }
+    }
   }
   blit();
   sleep(500); // 100 cycles = ~1 second
