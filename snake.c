@@ -16,13 +16,8 @@ int main()
   blit();
   sleep(200); // 100 cycles = ~1 second
 
-  // Paint the town (screen) red
   clear_screen();
-  for (int i = 320; i < 400; ++i) {
-    for (int j = 240; j < 300; ++j) {
-      draw_pixel(i, j, DARK_RED);
-    }
-  }
+  draw_line(124, 130, 356, 272, DARK_RED);
   blit();
   sleep(300);
   exit_graphics();

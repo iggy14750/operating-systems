@@ -553,7 +553,28 @@ sys_draw_line(void)
   ) {
     return -1;
   }
-  return x1 + y1 + x2 + y2 + color;
+
+  // The following calculation of slope
+  // assumes that y1 < y2, and x1 < x2,
+  // and that y2-y1 < x2-x1!
+  int slope_inv = (x2 - x1)/(y2 - y1);
+  int y = y1;
+  for (int x = x1; x <= x2; ++x) {
+    drawp(x, y, color);
+    if (x % slope_inv == 0) {
+      y++;
+    }
+  }
+
+  /* some special cases of horizontal and vertical
+  for (int i = x1; i <= x2; ++i) {
+    drawp(i, y1, color);
+  }
+  for (int i = y1; i <= y2; ++i) {
+    drawp(x2, i, color);
+  }*/
+
+  return 0;
 }
 
 int
