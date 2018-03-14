@@ -313,6 +313,13 @@ wait(void)
   }
 }
 
+int
+settickets(int number)
+{
+  myproc()->tickets = number;
+  return 0;
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
