@@ -168,6 +168,7 @@ UPROGS=\
 	_ln\
 	_ls\
 	_mkdir\
+	_myapp\
 	_rm\
 	_sh\
 	_stressfs\
