@@ -20,6 +20,31 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
+#define TICKETS_PER_PROC 64
+#define MAX_TICKETS NPROC*TICKETS_PER_PROC
+static struct proc* tickets[MAX_TICKETS];
+static int noTickets = 0;
+
+void addToTickets(struct proc* p, int n) {
+  // Can't add too many tickets.
+  for (int i = 0; i < n; ++i) {
+    if (noTickets >= MAX_TICKETS) return;
+    tickets[noTickets++] = p;
+  }
+}
+
+void removeFromTickets(struct proc* p) {
+  for (int i = 0; i < noTickets; ++i) {
+    if (tickets[i] == p) {
+      tickets[i] = tickets[--noTickets];
+    }
+  }
+  // special case: p was left at the end of tickets
+  if (tickets[noTickets-1] == p) {
+    noTickets--;
+  }
+}
+
 void
 pinit(void)
 {
@@ -138,7 +163,10 @@ userinit(void)
   p->tf->eflags = FL_IF;
   p->tf->esp = PGSIZE;
   p->tf->eip = 0;  // beginning of initcode.S
+  
+  // As part of the lottery scheduler
   p->tickets = 1;
+  addToTickets(p, 1);
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
@@ -200,7 +228,10 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
+
+  // Lottery scheduling
   np->tickets = curproc->tickets;
+  addToTickets(np, np->tickets);
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -248,6 +279,9 @@ exit(void)
   iput(curproc->cwd);
   end_op();
   curproc->cwd = 0;
+
+  // Lottery scheduling
+  removeFromTickets(curproc);
 
   acquire(&ptable.lock);
 
@@ -316,7 +350,10 @@ wait(void)
 int
 settickets(int number)
 {
-  myproc()->tickets = number;
+  if (number > TICKETS_PER_PROC) return -1;
+  struct proc* p = myproc();
+  addToTickets(p, number - p->tickets);
+  p->tickets = number;
   return 0;
 }
 
@@ -539,5 +576,9 @@ procdump(void)
         cprintf(" %p", pc[i]);
     }
     cprintf("\n");
+  }
+  cprintf("Number of tickets issued: %d\n", noTickets);
+  for (int i = 0; i < noTickets; ++i) {
+    cprintf("ticketno: %d\tpid: %d\n", i, tickets[i]->pid);
   }
 }

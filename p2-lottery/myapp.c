@@ -3,6 +3,13 @@
 #include "user.h"
 
 int main() {
-  settickets(42);
-  while (1);
+  settickets(2);
+  if (fork() == 0) {
+    // child
+  } else {
+    settickets(3);
+  }
+  wait();
+  sleep(100);
+  exit();
 }
