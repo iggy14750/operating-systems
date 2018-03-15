@@ -367,7 +367,7 @@ getpinfo(struct pstat* ps)
   acquire(&ptable.lock);
   for (int i = 0; i < NPROC; ++i) {
     struct proc p = ptable.proc[i];
-    ps->inuse[i] = 1;
+    ps->inuse[i] = p.state != UNUSED;
     ps->tickets[i] = p.tickets;
     ps->pid[i] = p.pid;
     ps->ticks[i] = 0;
