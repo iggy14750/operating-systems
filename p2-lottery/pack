@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# First remove all of the binary files
+make clean
+# Then TAR up the project.
+cd ..
+tar czf ibg4_project2.tar.gz p2-lottery/
+# Then test that it still builds
+mkdir temp
+tar xf ibg4_project2.tar.gz -C temp
+cd temp/p2-lottery
+make
+if [ $? -eq 0 ]
+then
+  echo "================"
+  echo "    Success"
+  echo "================"
+else
+  echo "================"
+  echo "    FAILURE!"
+  echo "================"
+fi
+cd ../../
+rm -r temp
+#ls -la
+cd p2-lottery
