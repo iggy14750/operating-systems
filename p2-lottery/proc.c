@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "pstat.h"
 
 struct {
   struct spinlock lock;
@@ -354,6 +355,24 @@ settickets(int number)
   struct proc* p = myproc();
   addToTickets(p, number - p->tickets);
   p->tickets = number;
+  return 0;
+}
+
+int
+getpinfo(struct pstat* ps)
+{
+  // Fill ps with information from ptable.
+  // TODO: How do I know if an entry in the table is inuse?
+  // TODO: Implement ticks.
+  acquire(&ptable.lock);
+  for (int i = 0; i < NPROC; ++i) {
+    struct proc p = ptable.proc[i];
+    ps->inuse[i] = 1;
+    ps->tickets[i] = p.tickets;
+    ps->pid[i] = p.pid;
+    ps->ticks[i] = 0;
+  }
+  release(&ptable.lock);
   return 0;
 }
 
