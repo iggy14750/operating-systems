@@ -363,6 +363,7 @@ settickets(int number)
 {
   if (number > TICKETS_PER_PROC) return -1;
   struct proc* p = myproc();
+  if (number < p->tickets) return -1;
   addToTickets(p, number - p->tickets);
   p->tickets = number;
   return 0;
