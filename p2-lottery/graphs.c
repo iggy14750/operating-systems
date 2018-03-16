@@ -5,12 +5,11 @@
 // Spawns two child processes so that the three
 // have a 1:2:3 relationship in terms of tickets.
 int main() {
-    settickets(10);
     if (fork() == 0) {
-        settickets(20);
+        settickets(2);
         while (1);
     } else if (fork() == 0) {
-        settickets(30);
+        settickets(3);
         while (1);
     } else {
         while (1);
