@@ -46,6 +46,14 @@ void removeFromTickets(struct proc* p) {
   }
 }
 
+unsigned int
+rand()
+{
+  static unsigned long randstate = 1;
+  randstate = randstate * 1664525 + 1013904223;
+  return randstate;
+}
+
 void
 pinit(void)
 {
@@ -166,8 +174,9 @@ userinit(void)
   p->tf->eip = 0;  // beginning of initcode.S
   
   // As part of the lottery scheduler
+  p->ticks = 0;
   p->tickets = 1;
-  addToTickets(p, 1);
+  addToTickets(p, p->tickets);
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
@@ -231,6 +240,7 @@ fork(void)
   *np->tf = *curproc->tf;
 
   // Lottery scheduling
+  np->ticks = 0;
   np->tickets = curproc->tickets;
   addToTickets(np, np->tickets);
 
@@ -370,7 +380,7 @@ getpinfo(struct pstat* ps)
     ps->inuse[i] = p.state != UNUSED;
     ps->tickets[i] = p.tickets;
     ps->pid[i] = p.pid;
-    ps->ticks[i] = 0;
+    ps->ticks[i] = p.ticks;
   }
   release(&ptable.lock);
   return 0;
@@ -407,6 +417,7 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      p->ticks++;
 
       swtch(&(c->scheduler), p->context);
       switchkvm();

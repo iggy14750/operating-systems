@@ -50,6 +50,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int tickets;                 // More tickets = more likely to be scheduled.
+  uint ticks;                  // The number of quanta which this process has been scheduled
 };
 
 // Process memory is laid out contiguously, low addresses first:
