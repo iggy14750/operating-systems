@@ -403,17 +403,46 @@ scheduler(void)
   
   for(;;){
     // Enable interrupts on this processor.
-    sti(); 
+    sti();
 
-    // Loop over process table looking for process to run.
-    acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
+    // "Randomly" find the new process to run,
+    // based on the number of tickets it has in the lottery.
+    // Must check that this proc is runnable.
+    if (noTickets == 0) {
+      // Apparently, on boot, no tickets have been assigned.
+      // Fall back to the original algorithm.
+      // Loop over process table looking for process to run.
+      acquire(&ptable.lock);
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->state != RUNNABLE)
+          continue;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
+        // Switch to chosen process.  It is the process's job
+        // to release ptable.lock and then reacquire it
+        // before jumping back to us.
+        c->proc = p;
+        switchuvm(p);
+        p->state = RUNNING;
+        p->ticks++;
+
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
+
+        // Process is done running for now.
+        // It should have changed its p->state before coming back.
+        c->proc = 0;
+      }
+      release(&ptable.lock);
+    } else {
+      while (1) {
+        int n = rand() % noTickets;
+        p = tickets[n];
+        if (p->state == RUNNABLE) break;
+      }
+      //while ( (p = tickets[rand() % noTickets])->state != RUNNABLE );
+      
+      // Schedule the chosen process.
+      acquire(&ptable.lock);
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
@@ -422,12 +451,9 @@ scheduler(void)
       swtch(&(c->scheduler), p->context);
       switchkvm();
 
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
       c->proc = 0;
+      release(&ptable.lock);
     }
-    release(&ptable.lock);
-
   }
 }
 
