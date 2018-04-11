@@ -10,6 +10,10 @@ struct sleeplock;
 struct stat;
 struct superblock;
 
+// Add for fs.c
+struct inode* create(char *path, short type, short major, short minor);
+int isdirempty(struct inode *dp);
+
 // bio.c
 void            binit(void);
 struct buf*     bread(uint, uint);
