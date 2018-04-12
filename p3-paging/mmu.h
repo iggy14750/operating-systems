@@ -130,6 +130,7 @@ struct segdesc {
 
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
 #define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
+#define PGNEEDED(bytes) (((bytes) % PGSIZE == 0) ? ((bytes) / PGSIZE) : (((bytes) / PGSIZE) + 1))
 
 // Page table/directory entry flags.
 #define PTE_P           0x001   // Present
