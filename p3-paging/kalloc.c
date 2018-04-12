@@ -107,9 +107,10 @@ kalloc(void)
   if(kmem.use_lock)
     acquire(&kmem.lock);
   r = kmem.freelist;
-  if(r)
+  if(r) {
     kmem.freelist = r->next;
     curr_pages--;
+  }
   if(kmem.use_lock)
     release(&kmem.lock);
   return (char*)r;
