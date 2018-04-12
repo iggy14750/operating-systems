@@ -233,7 +233,12 @@ exit(void)
 
   if(curproc == initproc)
     panic("init exiting");
-
+// Testing macros on "TRUE" always found the
+// condition true, somehow, so I had to change
+// it to something else, like numbers.
+#if VERBOSE_PRINT == 1
+  procdump();
+#endif
   // Close all open files.
   for(fd = 0; fd < NOFILE; fd++){
     if(curproc->ofile[fd]){
