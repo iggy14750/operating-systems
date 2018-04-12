@@ -8,7 +8,7 @@ int main()
   void* mem = sbrk(4096);
   int i;
   for(i = 0; i < 4095; i++){
-    *mem = 'a';
+    mem = 'a';
   }
 
   exit();
