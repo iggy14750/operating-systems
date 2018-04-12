@@ -73,7 +73,7 @@ void            kfree(char*);
 void            kinit1(void*, void*);
 void            kinit2(void*, void*);
 int             used_pages(void);
-int             available_pages(void);
+int             total_pages(void);
 
 // kbd.c
 void            kbdintr(void);

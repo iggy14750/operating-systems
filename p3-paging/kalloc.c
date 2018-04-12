@@ -54,19 +54,16 @@ freerange(void *vstart, void *vend)
 
 // Manages the number of pages available,
 // Both at this moment, and the maximum overall.
-static int max_pages = 0;
 static int curr_pages = 0;
-#define MAX_PAGES_CHECK \
-  max_pages = (curr_pages > max_pages) ? curr_pages : max_pages
 // The external interface, 
 // so that no one can sneakily modify our variables.
+int total_pages(void)
+{
+  return (512*1024*1024/PGSIZE) - (PGROUNDUP(V2P(end))/PGSIZE);
+}
 int used_pages(void)
 {
-  return max_pages - curr_pages;
-}
-int available_pages(void)
-{
-  return max_pages;
+  return total_pages() - curr_pages;
 }
 
 //PAGEBREAK: 21
@@ -91,7 +88,6 @@ kfree(char *v)
   r->next = kmem.freelist;
   kmem.freelist = r;
   curr_pages++;
-  MAX_PAGES_CHECK;
   if(kmem.use_lock)
     release(&kmem.lock);
 }
