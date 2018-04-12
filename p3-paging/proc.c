@@ -532,4 +532,8 @@ procdump(void)
     }
     cprintf("\n");
   }
+  int cpages = used_pages();
+  int mpages = available_pages();
+  double percpages = ((double)cpages / (double)mpages) * 100.0;
+  cprintf("%d% page use (%d/%d)\n", (int)percpages, cpages, mpages);
 }

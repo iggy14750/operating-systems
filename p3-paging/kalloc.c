@@ -51,6 +51,24 @@ freerange(void *vstart, void *vend)
   for(; p + PGSIZE <= (char*)vend; p += PGSIZE)
     kfree(p);
 }
+
+// Manages the number of pages available,
+// Both at this moment, and the maximum overall.
+static int max_pages = 0;
+static int curr_pages = 0;
+#define MAX_PAGES_CHECK \
+  max_pages = (curr_pages > max_pages) ? curr_pages : max_pages
+// The external interface, 
+// so that no one can sneakily modify our variables.
+int used_pages(void)
+{
+  return max_pages - curr_pages;
+}
+int available_pages(void)
+{
+  return max_pages;
+}
+
 //PAGEBREAK: 21
 // Free the page of physical memory pointed at by v,
 // which normally should have been returned by a
@@ -72,6 +90,8 @@ kfree(char *v)
   r = (struct run*)v;
   r->next = kmem.freelist;
   kmem.freelist = r;
+  curr_pages++;
+  MAX_PAGES_CHECK;
   if(kmem.use_lock)
     release(&kmem.lock);
 }
@@ -89,6 +109,7 @@ kalloc(void)
   r = kmem.freelist;
   if(r)
     kmem.freelist = r->next;
+    curr_pages--;
   if(kmem.use_lock)
     release(&kmem.lock);
   return (char*)r;
