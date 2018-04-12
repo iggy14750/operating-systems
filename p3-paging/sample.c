@@ -5,7 +5,7 @@
 int main()
 {
   printf(1, "Hellooo\n");
-  int *buf = sbrk();
+  int *buf = sbrk(4096);
   int i;
   for(i = 0; i < 4095; i++){
     *buf = (int) 'a';
