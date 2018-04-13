@@ -52,7 +52,7 @@ sys_sbrk(void)
   if(argint(0, &n) < 0)
     return -1;
 
-  num_pages = (myproc()->sz)/PGSIZE;
+  num_pages = PGNEEDED(myproc()->sz);
 
   if(num_pages >= MAX_TOTAL_PAGES)
     return -1; // no more memory for you
