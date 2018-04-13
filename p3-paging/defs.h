@@ -13,6 +13,10 @@ struct superblock;
 // Add for fs.c
 struct inode* create(char *path, short type, short major, short minor);
 int isdirempty(struct inode *dp);
+int removeSwapFile(struct proc *p);
+int createSwapFile(struct proc *p);
+int writeToSwapFile(struct proc *p, char* buffer, uint placeOnFile, uint size);
+int readFromSwapFile(struct proc *p, char* buffer, uint placeOnFile, uint size);
 
 // bio.c
 void            binit(void);
