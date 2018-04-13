@@ -233,7 +233,12 @@ exit(void)
 
   if(curproc == initproc)
     panic("init exiting");
-
+// Testing macros on "TRUE" always found the
+// condition true, somehow, so I had to change
+// it to something else, like numbers.
+#if VERBOSE_PRINT == 1
+  procdump();
+#endif
   // Close all open files.
   for(fd = 0; fd < NOFILE; fd++){
     if(curproc->ofile[fd]){
@@ -523,7 +528,8 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+    cprintf("%d %s %d %d %d %d %s", 
+      p->pid, state, PGNEEDED(p->sz), p->pout, p->tpfaults, p->tpout, p->name);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
@@ -531,4 +537,8 @@ procdump(void)
     }
     cprintf("\n");
   }
+  int cpages = used_pages();
+  int mpages = total_pages();
+  double percpages = ((double)cpages / (double)mpages) * 100.0;
+  cprintf("%d% page use (%d/%d)\n", (int)percpages, cpages, mpages);
 }
