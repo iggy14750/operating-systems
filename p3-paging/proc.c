@@ -246,6 +246,7 @@ exit(void)
       curproc->ofile[fd] = 0;
     }
   }
+  removeSwapFile(curproc);
 
   begin_op();
   iput(curproc->cwd);
