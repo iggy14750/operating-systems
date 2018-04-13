@@ -72,6 +72,8 @@ char*           kalloc(void);
 void            kfree(char*);
 void            kinit1(void*, void*);
 void            kinit2(void*, void*);
+int             used_pages(void);
+int             total_pages(void);
 
 // kbd.c
 void            kbdintr(void);
@@ -107,6 +109,7 @@ int             pipewrite(struct pipe*, char*, int);
 
 //PAGEBREAK: 16
 // proc.c
+#define VERBOSE_PRINT 0 // Set to 1 to enable.
 int             cpuid(void);
 void            exit(void);
 int             fork(void);
