@@ -52,12 +52,12 @@ sys_sbrk(void)
   if(argint(0, &n) < 0)
     return -1;
 
-  num_pages = (myproc()->sz)/4096;  // PG_SIZE of 4k
+  num_pages = (myproc()->sz)/PGSIZE;
 
   if(num_pages >= MAX_TOTAL_PAGES)
     return -1; // no more memory for you
 
-  if(num_pages >= MAX_PSYC_PAGES)
+  if(num_pages >= MAX_PSYC_PAGES) {}
     //need to go out to swapfile
 
   addr = myproc()->sz;
