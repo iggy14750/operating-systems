@@ -52,15 +52,16 @@ sys_sbrk(void)
   if(argint(0, &n) < 0)
     return -1;
 
-  num_pages = PGNEEDED(myproc()->sz);
+  addr = myproc()->sz;
+  num_pages = PGNEEDED(addr + n);
 
   if(num_pages >= MAX_TOTAL_PAGES)
     return -1; // no more memory for you
 
-  if(num_pages >= MAX_PSYC_PAGES) {}
-    //need to go out to swapfile
+  if(num_pages >= MAX_PSYC_PAGES) {
+    // need to go out to swapfile
+  }
 
-  addr = myproc()->sz;
   if(growproc(n) < 0)
     return -1;
   return addr;
