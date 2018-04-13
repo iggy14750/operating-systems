@@ -285,6 +285,7 @@ freevm(pde_t *pgdir)
 {
   uint i;
 
+  removeSwapFile(myproc());
   if(pgdir == 0)
     panic("freevm: no pgdir");
   deallocuvm(pgdir, KERNBASE, 0);
@@ -321,6 +322,8 @@ copyuvm(pde_t *pgdir, uint sz)
   char *mem;
 
   createSwapFile(myproc());
+  // still need to copy the parent's file over.
+  // Also, shoudln't create a swap file for init and sh.
 
   if((d = setupkvm()) == 0)
     return 0;
