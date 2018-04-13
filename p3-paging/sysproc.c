@@ -45,22 +45,15 @@ sys_getpid(void)
 int
 sys_sbrk(void)
 {
-  int addr=0;
+  int addr;
   int n;
-  int num_pages;
 
   if(argint(0, &n) < 0)
     return -1;
 
   addr = myproc()->sz;
-  num_pages = PGNEEDED(addr + n);
-
-  if(num_pages >= MAX_TOTAL_PAGES)
+  if(PGNEEDED(addr) + PGNEEDED(n) >= MAX_TOTAL_PAGES)
     return -1; // no more memory for you
-
-  if(num_pages >= MAX_PSYC_PAGES) {
-    // need to go out to swapfile
-  }
 
   if(growproc(n) < 0)
     return -1;

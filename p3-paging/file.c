@@ -59,8 +59,10 @@ fileclose(struct file *f)
   struct file ff;
 
   acquire(&ftable.lock);
-  if(f->ref < 1)
+  if(f->ref < 1){
+    cprintf("fileclose, refcount: %d\n", f->ref);
     panic("fileclose");
+  }
   if(--f->ref > 0){
     release(&ftable.lock);
     return;
