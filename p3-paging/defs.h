@@ -164,6 +164,7 @@ void            syscall(void);
 void            timerinit(void);
 
 // trap.c
+#define MAX_PSYC_PAGES 15
 void            idtinit(void);
 extern uint     ticks;
 void            tvinit(void);
