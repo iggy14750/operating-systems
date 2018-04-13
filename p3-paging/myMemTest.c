@@ -34,9 +34,10 @@ int main()
 
   // Fork Test
   pid = fork();
-  if(pid < 0){
+  if(pid == 0){
+    // child
     exit();
   }
-
+  wait();
   exit();
 }

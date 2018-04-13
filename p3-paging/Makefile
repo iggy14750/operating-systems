@@ -169,7 +169,7 @@ UPROGS=\
 	_ls\
 	_mkdir\
 	_rm\
-	_sample\
+	_myMemTest\
 	_sh\
 	_stressfs\
 	_usertests\
