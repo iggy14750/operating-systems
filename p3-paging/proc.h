@@ -1,3 +1,6 @@
+#ifndef __PROC_H__
+#define __PROC_H__
+#include "defs.h"
 // Per-CPU state
 struct cpu {
   uchar apicid;                // Local APIC ID
@@ -53,6 +56,10 @@ struct proc {
   int pout;                    // Number of pages currently paged out
   int tpfaults;                // Number of times this process had a page fault
   int tpout;                   // Number of times pages were paged out
+  // Assigns a number to each page in the swap file; holds Virtual Page Numbers (VPNs)
+  uint swapFileTable[MAX_TOTAL_PAGES - MAX_PSYC_PAGES];
+  // Assigns a number to each page in pysical memory; holds VPNs
+  uint physMemTable[MAX_PSYC_PAGES];
 };
 
 // Process memory is laid out contiguously, low addresses first:
@@ -60,3 +67,4 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+#endif
