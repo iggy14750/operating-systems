@@ -65,6 +65,32 @@ int countEntries(int* table, int len)
   return sum;
 }
 
+// Performs a seach of the page directory,
+// and fills `buff` with virtual addresses which are
+// present in physical memory.
+// Param `len` is the length of buff,
+// by number of pointers it can contain.
+// Returns the number of elements added to `buff`.
+int findVa(pde_t *pgdir, void** buff, int len)
+{
+  pde_t pde;
+  pte_t *pte;
+  int buffi = 0;
+  for (int pdi = 0; pdi < 512; pdi++) {
+    pde = pgdir[pdi];
+    if ((pde & PTE_P) == 0) continue;
+    pte = (pte_t*)P2V(PTE_ADDR(pde));
+    for (int pti = 0; pti < 1024; pti++) {
+      if ((pte[pti] & PTE_P) == 0) continue;
+      buff[buffi++] = (void*)PGADDR(pdi, pti, 0);
+      if (buffi >= len) {
+        return buffi;
+      }
+    }
+  }
+  return buffi;
+}
+
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
 // create any required page table pages.

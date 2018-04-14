@@ -203,6 +203,7 @@ void            clearpteu(pde_t *pgdir, char *uva);
 int             pageOut(uint va);
 int             pageIn(uint va);
 int             countEntries(int*, int);
+int             findVa(pde_t*,void**,int);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

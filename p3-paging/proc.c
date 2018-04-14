@@ -534,7 +534,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %d %d %d %d %s", 
+    cprintf("%d %s %d %d %d %d %s",
       p->pid, state, PGNEEDED(p->sz), p->pout, p->tpfaults, p->tpout, p->name);
     cprintf(" %d pages(swapped)",
       countEntries(p->swapFileTable, MAX_SWAP_PAGES ));
