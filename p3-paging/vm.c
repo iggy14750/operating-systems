@@ -29,6 +29,31 @@ seginit(void)
   lgdt(c->gdt, sizeof(c->gdt));
 }
 
+// Moves the given page to this proc's swap file,
+// Taking care of the page table, TLB/control registers,
+// and returns the physical page to `kfree`.
+// Param `va` is a virtual address inside said page.
+// Returns 0 if successful, -1 otherwise.
+int pageOut(uint va) {
+  struct proc *p = myproc();
+  va = PGROUNDDOWN(va);
+  // I don't do anything yet.
+  return 0;
+}
+
+// Removes a page from this processes' swap file,
+// and places it into main memory.
+// Takes care of the page table, TLB/control registers,
+// allocating a new page from `kalloc`.
+// Param `va` is a virtual address inside said page.
+// Returns 0 if successful, -1 otherwise.
+int pageIn(uint va) {
+  struct proc *p = myproc();
+  va = PGROUNDDOWN(va);
+  // TODO
+  return 0;
+}
+
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
 // create any required page table pages.
