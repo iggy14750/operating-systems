@@ -35,7 +35,7 @@ seginit(void)
 // Param `va` is a virtual address inside said page.
 // Returns 0 if successful, -1 otherwise.
 int pageOut(uint va) {
-  struct proc *p = myproc();
+  // struct proc *p = myproc();
   va = PGROUNDDOWN(va);
   // I don't do anything yet.
   return 0;
@@ -48,10 +48,21 @@ int pageOut(uint va) {
 // Param `va` is a virtual address inside said page.
 // Returns 0 if successful, -1 otherwise.
 int pageIn(uint va) {
-  struct proc *p = myproc();
+  // struct proc *p = myproc();
   va = PGROUNDDOWN(va);
   // TODO
   return 0;
+}
+
+// Checks consecutive entries in the given table,
+// and returns either the position of the first
+// occurence of -1, or the length of the array,
+// whichever comes first.
+int countEntries(int* table, int len)
+{
+  int sum = 0;
+  for (; sum < len && table[sum] != -1; sum++);
+  return sum;
 }
 
 // Return the address of the PTE in page table pgdir

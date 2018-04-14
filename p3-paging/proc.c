@@ -98,6 +98,9 @@ found:
   }
   sp = p->kstack + KSTACKSIZE;
 
+  // Default page swapping information.
+  memset(p->swapFileTable, -1, sizeof(p->swapFileTable));
+
   // Leave room for trap frame.
   sp -= sizeof *p->tf;
   p->tf = (struct trapframe*)sp;
@@ -199,6 +202,8 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
+
+  memmove(np->swapFileTable, curproc->swapFileTable, sizeof(np->swapFileTable));
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -531,6 +536,8 @@ procdump(void)
       state = "???";
     cprintf("%d %s %d %d %d %d %s", 
       p->pid, state, PGNEEDED(p->sz), p->pout, p->tpfaults, p->tpout, p->name);
+    cprintf(" %d pages(swapped)",
+      countEntries(p->swapFileTable, MAX_SWAP_PAGES ));
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)

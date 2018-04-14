@@ -173,6 +173,7 @@ void            timerinit(void);
 // trap.c
 #define MAX_PSYC_PAGES 15
 #define MAX_TOTAL_PAGES 30
+#define MAX_SWAP_PAGES (MAX_TOTAL_PAGES - MAX_PSYC_PAGES)
 
 void            idtinit(void);
 extern uint     ticks;
@@ -201,6 +202,7 @@ int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
 int             pageOut(uint va);
 int             pageIn(uint va);
+int             countEntries(int*, int);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

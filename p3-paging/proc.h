@@ -57,9 +57,7 @@ struct proc {
   int tpfaults;                // Number of times this process had a page fault
   int tpout;                   // Number of times pages were paged out
   // Assigns a number to each page in the swap file; holds Virtual Page Numbers (VPNs)
-  uint swapFileTable[MAX_TOTAL_PAGES - MAX_PSYC_PAGES];
-  // Assigns a number to each page in pysical memory; holds VPNs
-  uint physMemTable[MAX_PSYC_PAGES];
+  int swapFileTable[MAX_SWAP_PAGES];
 };
 
 // Process memory is laid out contiguously, low addresses first:
