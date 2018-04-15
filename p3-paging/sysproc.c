@@ -50,7 +50,11 @@ sys_sbrk(void)
 
   if(argint(0, &n) < 0)
     return -1;
+
   addr = myproc()->sz;
+  if(PGNEEDED(addr) + PGNEEDED(n) >= MAX_TOTAL_PAGES)
+    return -1; // no more memory for you
+
   if(growproc(n) < 0)
     return -1;
   return addr;

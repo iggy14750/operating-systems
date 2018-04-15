@@ -13,6 +13,10 @@ struct superblock;
 // Add for fs.c
 struct inode* create(char *path, short type, short major, short minor);
 int isdirempty(struct inode *dp);
+int removeSwapFile(struct proc *p);
+int createSwapFile(struct proc *p);
+int writeToSwapFile(struct proc *p, char* buffer, uint placeOnFile, uint size);
+int readFromSwapFile(struct proc *p, char* buffer, uint placeOnFile, uint size);
 
 // bio.c
 void            binit(void);
@@ -109,7 +113,6 @@ int             pipewrite(struct pipe*, char*, int);
 
 //PAGEBREAK: 16
 // proc.c
-#define VERBOSE_PRINT 0 // Set to 1 to enable.
 int             cpuid(void);
 void            exit(void);
 int             fork(void);
@@ -167,6 +170,10 @@ void            syscall(void);
 void            timerinit(void);
 
 // trap.c
+#define MAX_PSYC_PAGES 15
+#define MAX_TOTAL_PAGES 30
+#define MAX_SWAP_PAGES (MAX_TOTAL_PAGES - MAX_PSYC_PAGES)
+
 void            idtinit(void);
 extern uint     ticks;
 void            tvinit(void);
@@ -192,6 +199,10 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
+int             pageOut(struct proc*, void* va);
+int             pageIn(struct proc*, void* va);
+int             findFirst(int*, int, int);
+int             findVa(pde_t*,void**,int);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

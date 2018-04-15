@@ -2,6 +2,10 @@
 #include "user.h"
 #include "syscall.h"
 
+char *new_prog[] = {
+  "ls"
+};
+
 int main()
 {
   printf(1, "Sample Test\n");
@@ -36,8 +40,10 @@ int main()
   pid = fork();
   if(pid == 0){
     // child
+    exec(new_prog[0], new_prog);
     exit();
   }
   wait();
+  printf(1, "%s has pid %d\n", new_prog[0], pid);
   exit();
 }

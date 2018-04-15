@@ -29,6 +29,9 @@ seginit(void)
   lgdt(c->gdt, sizeof(c->gdt));
 }
 
+static int
+mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm);
+
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
 // create any required page table pages.
@@ -52,6 +55,107 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
     *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;
   }
   return &pgtab[PTX(va)];
+}
+
+// Very simple checksum.
+uint hash(char* addr, int len)
+{
+  uint sum = 0;
+  for (int i = 0; i < len; i++) {
+    sum = (sum + addr[i]) % 255; //prevent overflow
+  }
+  return sum;
+}
+
+// Moves the given page to this proc's swap file,
+// Taking care of the page table, TLB/control registers,
+// and returns the physical page to `kfree`.
+// Param `va` is a virtual address inside said page.
+// Returns 0 if successful, -1 otherwise.
+int pageOut(struct proc* p, void* va) {
+  if ((uint)va >= KERNBASE) return -1;
+  va = (void*)PGROUNDDOWN((uint)va);
+  // Find the physical address
+  char* pa = (char*)PTE_ADDR(walkpgdir(p->pgdir, va, 0));
+  // Find the place for this page
+  int pos = findFirst(p->swapFileTable, MAX_SWAP_PAGES, -1);
+  if (pos == MAX_SWAP_PAGES) return -1;
+  // Now update the table in the proc struct
+  p->swapFileTable[pos] = (uint)va;
+  // Write out to swap file
+  writeToSwapFile(p, pa, pos, PGSIZE);
+  // Now we can grab the page table entry...
+  pte_t *pte = walkpgdir(p->pgdir, va, 0);
+  // And unset PTE_P, while setting PTE_PG...
+  *pte &= ~PTE_P;
+  *pte |= PTE_PG;
+  // ...free the physical page...
+  kfree(pa);
+  // And finally flush the TLB.
+  lcr3(PTE_ADDR(p->pgdir));
+  return 0;
+}
+
+// Removes a page from this processes' swap file,
+// and places it into main memory.
+// Takes care of the page table,
+// allocating a new page from `kalloc`.
+// Param `va` is a virtual address inside said page.
+// Returns 0 if successful, -1 otherwise.
+int pageIn(struct proc* p, void* va) {
+  if ((uint)va >= KERNBASE) return -1;
+  va = (void*)PGROUNDDOWN((uint)va);
+  pte_t* pte = walkpgdir(p->pgdir, va, 0);
+  *pte &= ~PTE_PG; // Unset the paged bit
+  // Insert this page back into memory.
+  mappages(p->pgdir, va, 1, 0, PTE_FLAGS(pte));
+  char* pa = (char*)PTE_ADDR((uint)pte);
+  // Find its position in the table
+  int pos = findFirst(p->swapFileTable, MAX_SWAP_PAGES, (uint)va);
+  if (pos == MAX_SWAP_PAGES) return -1;
+  // write the data back into it.
+  readFromSwapFile(p, pa, pos, PGSIZE);
+  // And remove that spot in the table.
+  p->swapFileTable[pos] = -1;
+  // Update the page table
+  return 0;
+}
+
+// Checks consecutive entries in the given table,
+// and returns either the position of the first
+// occurence of `elem`, or the length of the array,
+// whichever comes first.
+int findFirst(int* table, int len, int elem)
+{
+  int sum = 0;
+  for (; sum < len && table[sum] != elem; sum++);
+  return sum;
+}
+
+// Performs a seach of the page directory,
+// and fills `buff` with virtual addresses which are
+// present in physical memory.
+// Param `len` is the length of buff,
+// by number of pointers it can contain.
+// Returns the number of elements added to `buff`.
+int findVa(pde_t *pgdir, void** buff, int len)
+{
+  pde_t pde;
+  pte_t *pte;
+  int buffi = 0;
+  for (int pdi = 0; pdi < 512; pdi++) {
+    pde = pgdir[pdi];
+    if ((pde & PTE_P) == 0) continue;
+    pte = (pte_t*)P2V(PTE_ADDR(pde));
+    for (int pti = 0; pti < 1024; pti++) {
+      if ((pte[pti] & PTE_P) == 0) continue;
+      buff[buffi++] = (void*)PGADDR(pdi, pti, 0);
+      if (buffi >= len) {
+        return buffi;
+      }
+    }
+  }
+  return buffi;
 }
 
 // Create PTEs for virtual addresses starting at va that refer to
