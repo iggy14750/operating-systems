@@ -70,6 +70,7 @@ uint hash(char* addr, int len)
 // Param `va` is a virtual address inside said page.
 // Returns 0 if successful, -1 otherwise.
 int pageOut(struct proc* p, void* va) {
+  if ((uint)va >= KERNBASE) return -1;
   va = (void*)PGROUNDDOWN((uint)va);
   // Find the physical address
   char* pa = (char*)PTE_ADDR(walkpgdir(p->pgdir, va, 0));
@@ -98,6 +99,7 @@ int pageOut(struct proc* p, void* va) {
 // Param `va` is a virtual address inside said page.
 // Returns 0 if successful, -1 otherwise.
 int pageIn(struct proc* p, void* va) {
+  if ((uint)va >= KERNBASE) return -1;
   // struct proc *p = myproc();
   va = (void*)PGROUNDDOWN((uint)va);
   // TODO
