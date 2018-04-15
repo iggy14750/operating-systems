@@ -29,15 +29,65 @@ seginit(void)
   lgdt(c->gdt, sizeof(c->gdt));
 }
 
+// Return the address of the PTE in page table pgdir
+// that corresponds to virtual address va.  If alloc!=0,
+// create any required page table pages.
+static pte_t *
+walkpgdir(pde_t *pgdir, const void *va, int alloc)
+{
+  pde_t *pde;
+  pte_t *pgtab;
+
+  pde = &pgdir[PDX(va)];
+  if(*pde & PTE_P){
+    pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
+  } else {
+    if(!alloc || (pgtab = (pte_t*)kalloc()) == 0)
+      return 0;
+    // Make sure all those PTE_P bits are zero.
+    memset(pgtab, 0, PGSIZE);
+    // The permissions here are overly generous, but they can
+    // be further restricted by the permissions in the page table
+    // entries, if necessary.
+    *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;
+  }
+  return &pgtab[PTX(va)];
+}
+
+// Very simple checksum.
+uint hash(char* addr, int len)
+{
+  uint sum = 0;
+  for (int i = 0; i < len; i++) {
+    sum = (sum + addr[i]) % 255; //prevent overflow
+  }
+  return sum;
+}
+
 // Moves the given page to this proc's swap file,
 // Taking care of the page table, TLB/control registers,
 // and returns the physical page to `kfree`.
 // Param `va` is a virtual address inside said page.
 // Returns 0 if successful, -1 otherwise.
-int pageOut(uint va) {
-  // struct proc *p = myproc();
+int pageOut(struct proc* p, uint va) {
   va = PGROUNDDOWN(va);
-  // I don't do anything yet.
+  // Find the physical address
+  char* pa = (char*)PTE_ADDR(walkpgdir(p->pgdir, (void*)va, 0));
+  // Find the place for this page
+  int pos = countEntries(p->swapFileTable, MAX_SWAP_PAGES);
+  // Now update the table in the proc struct
+  p->swapFileTable[pos] = va;
+  // Write out to swap file
+  writeToSwapFile(p, pa, pos, PGSIZE);
+  // Now we can grab the page table entry...
+  pte_t *pte = walkpgdir(p->pgdir, (void*)va, 0);
+  // And unset PTE_P, while setting PTE_PG...
+  *pte &= ~PTE_P;
+  *pte |= PTE_PG;
+  // ...free the physical page...
+  kfree(pa);
+  // And finally flush the TLB.
+  lcr3(PTE_ADDR(p->pgdir));
   return 0;
 }
 
@@ -89,31 +139,6 @@ int findVa(pde_t *pgdir, void** buff, int len)
     }
   }
   return buffi;
-}
-
-// Return the address of the PTE in page table pgdir
-// that corresponds to virtual address va.  If alloc!=0,
-// create any required page table pages.
-static pte_t *
-walkpgdir(pde_t *pgdir, const void *va, int alloc)
-{
-  pde_t *pde;
-  pte_t *pgtab;
-
-  pde = &pgdir[PDX(va)];
-  if(*pde & PTE_P){
-    pgtab = (pte_t*)P2V(PTE_ADDR(*pde));
-  } else {
-    if(!alloc || (pgtab = (pte_t*)kalloc()) == 0)
-      return 0;
-    // Make sure all those PTE_P bits are zero.
-    memset(pgtab, 0, PGSIZE);
-    // The permissions here are overly generous, but they can
-    // be further restricted by the permissions in the page table
-    // entries, if necessary.
-    *pde = V2P(pgtab) | PTE_P | PTE_W | PTE_U;
-  }
-  return &pgtab[PTX(va)];
 }
 
 // Create PTEs for virtual addresses starting at va that refer to
@@ -381,10 +406,6 @@ copyuvm(pde_t *pgdir, uint sz)
   pte_t *pte;
   uint pa, i, flags;
   char *mem;
-
-  createSwapFile(myproc());
-  // still need to copy the parent's file over.
-  // Also, shoudln't create a swap file for init and sh.
 
   if((d = setupkvm()) == 0)
     return 0;

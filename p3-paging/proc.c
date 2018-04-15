@@ -203,6 +203,9 @@ fork(void)
   np->parent = curproc;
   *np->tf = *curproc->tf;
 
+  createSwapFile(np);
+  // still need to copy the parent's file over.
+  // Also, shoudln't create a swap file for init and sh.
   memmove(np->swapFileTable, curproc->swapFileTable, sizeof(np->swapFileTable));
 
   // Clear %eax so that fork returns 0 in the child.
@@ -538,6 +541,9 @@ procdump(void)
       p->pid, state, PGNEEDED(p->sz), p->pout, p->tpfaults, p->tpout, p->name);
     cprintf(" %d pages(swapped)",
       countEntries(p->swapFileTable, MAX_SWAP_PAGES ));
+    // if (p->pid == 2) {
+    //   pageOut(p, 0x1000);
+    // }
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
