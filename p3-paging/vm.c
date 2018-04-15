@@ -69,18 +69,18 @@ uint hash(char* addr, int len)
 // and returns the physical page to `kfree`.
 // Param `va` is a virtual address inside said page.
 // Returns 0 if successful, -1 otherwise.
-int pageOut(struct proc* p, uint va) {
-  va = PGROUNDDOWN(va);
+int pageOut(struct proc* p, void* va) {
+  va = (void*)PGROUNDDOWN((uint)va);
   // Find the physical address
-  char* pa = (char*)PTE_ADDR(walkpgdir(p->pgdir, (void*)va, 0));
+  char* pa = (char*)PTE_ADDR(walkpgdir(p->pgdir, va, 0));
   // Find the place for this page
   int pos = countEntries(p->swapFileTable, MAX_SWAP_PAGES);
   // Now update the table in the proc struct
-  p->swapFileTable[pos] = va;
+  p->swapFileTable[pos] = (uint)va;
   // Write out to swap file
   writeToSwapFile(p, pa, pos, PGSIZE);
   // Now we can grab the page table entry...
-  pte_t *pte = walkpgdir(p->pgdir, (void*)va, 0);
+  pte_t *pte = walkpgdir(p->pgdir, va, 0);
   // And unset PTE_P, while setting PTE_PG...
   *pte &= ~PTE_P;
   *pte |= PTE_PG;
@@ -97,9 +97,9 @@ int pageOut(struct proc* p, uint va) {
 // allocating a new page from `kalloc`.
 // Param `va` is a virtual address inside said page.
 // Returns 0 if successful, -1 otherwise.
-int pageIn(uint va) {
+int pageIn(struct proc* p, void* va) {
   // struct proc *p = myproc();
-  va = PGROUNDDOWN(va);
+  va = (void*)PGROUNDDOWN((uint)va);
   // TODO
   return 0;
 }

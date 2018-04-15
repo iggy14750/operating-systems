@@ -199,8 +199,8 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
-int             pageOut(struct proc*, uint va);
-int             pageIn(uint va);
+int             pageOut(struct proc*, void* va);
+int             pageIn(struct proc*, void* va);
 int             countEntries(int*, int);
 int             findVa(pde_t*,void**,int);
 
