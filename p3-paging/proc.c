@@ -539,11 +539,6 @@ procdump(void)
       state = "???";
     cprintf("%d %s %d %d %d %d %s",
       p->pid, state, PGNEEDED(p->sz), p->pout, p->tpfaults, p->tpout, p->name);
-    cprintf(" %d pages(swapped)",
-      countEntries(p->swapFileTable, MAX_SWAP_PAGES ));
-    // if (p->pid == 2) {
-    //   pageOut(p, 0x1000);
-    // }
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)

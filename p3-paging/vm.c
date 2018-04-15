@@ -29,6 +29,9 @@ seginit(void)
   lgdt(c->gdt, sizeof(c->gdt));
 }
 
+static int
+mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm);
+
 // Return the address of the PTE in page table pgdir
 // that corresponds to virtual address va.  If alloc!=0,
 // create any required page table pages.
@@ -75,7 +78,8 @@ int pageOut(struct proc* p, void* va) {
   // Find the physical address
   char* pa = (char*)PTE_ADDR(walkpgdir(p->pgdir, va, 0));
   // Find the place for this page
-  int pos = countEntries(p->swapFileTable, MAX_SWAP_PAGES);
+  int pos = findFirst(p->swapFileTable, MAX_SWAP_PAGES, -1);
+  if (pos == MAX_SWAP_PAGES) return -1;
   // Now update the table in the proc struct
   p->swapFileTable[pos] = (uint)va;
   // Write out to swap file
@@ -94,26 +98,37 @@ int pageOut(struct proc* p, void* va) {
 
 // Removes a page from this processes' swap file,
 // and places it into main memory.
-// Takes care of the page table, TLB/control registers,
+// Takes care of the page table,
 // allocating a new page from `kalloc`.
 // Param `va` is a virtual address inside said page.
 // Returns 0 if successful, -1 otherwise.
 int pageIn(struct proc* p, void* va) {
   if ((uint)va >= KERNBASE) return -1;
-  // struct proc *p = myproc();
   va = (void*)PGROUNDDOWN((uint)va);
-  // TODO
+  pte_t* pte = walkpgdir(p->pgdir, va, 0);
+  *pte &= ~PTE_PG; // Unset the paged bit
+  // Insert this page back into memory.
+  mappages(p->pgdir, va, 1, 0, PTE_FLAGS(pte));
+  char* pa = (char*)PTE_ADDR((uint)pte);
+  // Find its position in the table
+  int pos = findFirst(p->swapFileTable, MAX_SWAP_PAGES, (uint)va);
+  if (pos == MAX_SWAP_PAGES) return -1;
+  // write the data back into it.
+  readFromSwapFile(p, pa, pos, PGSIZE);
+  // And remove that spot in the table.
+  p->swapFileTable[pos] = -1;
+  // Update the page table
   return 0;
 }
 
 // Checks consecutive entries in the given table,
 // and returns either the position of the first
-// occurence of -1, or the length of the array,
+// occurence of `elem`, or the length of the array,
 // whichever comes first.
-int countEntries(int* table, int len)
+int findFirst(int* table, int len, int elem)
 {
   int sum = 0;
-  for (; sum < len && table[sum] != -1; sum++);
+  for (; sum < len && table[sum] != elem; sum++);
   return sum;
 }
 

@@ -201,7 +201,7 @@ int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
 int             pageOut(struct proc*, void* va);
 int             pageIn(struct proc*, void* va);
-int             countEntries(int*, int);
+int             findFirst(int*, int, int);
 int             findVa(pde_t*,void**,int);
 
 // number of elements in fixed-size array
