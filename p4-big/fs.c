@@ -398,6 +398,31 @@ bmap(struct inode *ip, uint bn)
     brelse(bp);
     return addr;
   }
+  bn -= NO_SINGLE_INDIR * NINDIRECT;
+
+  if (bn < NINDIRECT*NINDIRECT) { // Double-indirect blocks
+    int topLevelNo = NDIRECT + NO_SINGLE_INDIR;
+    if ((addr = ip->addrs[topLevelNo]) == 0) {
+      ip->addrs[topLevelNo] = addr = balloc(ip->dev);
+    }
+    struct buf* firstBuf = bread(ip->dev, addr); // Read first-level indir block
+    uint* firstData = (uint*)firstBuf->data;
+    if ((addr = firstData[bn / NINDIRECT]) == 0) {
+      firstData[bn / NINDIRECT] = addr = balloc(ip->dev);
+      log_write(firstBuf);
+    }
+
+    // addr is now the address of the second-level indir block
+    struct buf* secondBuf = bread(ip->dev, addr);
+    uint* secondData = (uint*)secondBuf->data;
+    if ((addr = secondData[bn % NINDIRECT]) == 0) {
+      secondData[bn % NINDIRECT] = addr = balloc(ip->dev);
+      log_write(secondBuf);
+    }
+    brelse(secondBuf);
+    brelse(firstBuf);
+    return addr;
+  }
 
   panic("bmap: out of range");
 }
