@@ -383,10 +383,11 @@ bmap(struct inode *ip, uint bn)
   }
   bn -= NDIRECT;
 
-  if(bn < NINDIRECT){
+  if(bn < 2 * NINDIRECT){
     // Load indirect block, allocating if necessary.
-    if((addr = ip->addrs[NDIRECT]) == 0) // No indirect block
-      ip->addrs[NDIRECT] = addr = balloc(ip->dev);
+    int indirectBlockNumber = NDIRECT + (bn / BSIZE);
+    if((addr = ip->addrs[indirectBlockNumber]) == 0) // No indirect block
+      ip->addrs[indirectBlockNumber] = addr = balloc(ip->dev);
     bp = bread(ip->dev, addr);
     a = (uint*)bp->data; // 'a' represents the indirect block
     if((addr = a[bn]) == 0){ // No data block
