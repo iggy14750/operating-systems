@@ -15,3 +15,5 @@ kernelmemfs
 mkfs
 *.tar.gz
 .gdbinit
+*.PNG
+*.xlsx
