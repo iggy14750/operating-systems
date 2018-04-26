@@ -385,11 +385,12 @@ bmap(struct inode *ip, uint bn)
 
   if(bn < 2 * NINDIRECT){
     // Load indirect block, allocating if necessary.
-    int indirectBlockNumber = NDIRECT + (bn / BSIZE);
+    int indirectBlockNumber = NDIRECT + (bn / NINDIRECT);
     if((addr = ip->addrs[indirectBlockNumber]) == 0) // No indirect block
       ip->addrs[indirectBlockNumber] = addr = balloc(ip->dev);
     bp = bread(ip->dev, addr);
     a = (uint*)bp->data; // 'a' represents the indirect block
+    bn %= NINDIRECT; // Look at the index inside of the indirect block
     if((addr = a[bn]) == 0){ // No data block
       a[bn] = addr = balloc(ip->dev);
       log_write(bp); // Write back the changes to the indirect block
